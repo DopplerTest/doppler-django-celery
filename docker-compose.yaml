@@ -1,0 +1,42 @@
+version: '3.7'
+
+services:
+  app:
+    container_name: django
+    image: dopplerhq/django-celery:latest
+    environment:
+      - REDIS_HOSTNAME
+      - REDIS_PORT
+      - APP_SECRET
+    ports:
+      - '8080:8080'    
+    depends_on:
+      - redis
+      - celery
+    networks:
+      - doppler
+
+  celery:
+    container_name: celery
+    image: dopplerhq/django-celery:latest
+    command: celery -A doppler worker -l INFO
+    restart: always
+    environment:
+      - REDIS_HOSTNAME
+      - REDIS_PORT
+      - APP_SECRET
+    depends_on:
+      - redis
+    networks:
+      - doppler
+
+  redis:
+    container_name: redis
+    image: redis:6-alpine
+    ports:
+      - '6379:6379'
+    networks:
+      - doppler
+
+networks:
+  doppler:
